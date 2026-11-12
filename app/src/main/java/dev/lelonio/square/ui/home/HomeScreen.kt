@@ -221,8 +221,7 @@ fun HomeScreen(
             Text(
                 text = "Kisetsu",
                 style = MaterialTheme.typography.headlineMedium.copy(
-                    fontFamily = androidx.compose.ui.text.font.FontFamily.SansSerif,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Bold,
                     letterSpacing = (-0.5).sp,
                 ),
                 color = Ink,
@@ -235,8 +234,8 @@ fun HomeScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 40.dp),
             )
-            GlassAction(stringResource(R.string.log_in_with_spotify), backdrop, onLogIn)
-            dev.lelonio.square.ui.components.SignedOutOptions(onUseYouTube, onOpenSettings)
+            GlassAction(stringResource(R.string.use_youtube_music), backdrop, onUseYouTube)
+            dev.lelonio.square.ui.components.SignedOutOptions(onOpenSettings = onOpenSettings)
         }
 
         MainViewModel.UiState.Connecting,

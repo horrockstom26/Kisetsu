@@ -19,9 +19,14 @@ val SpotifyMix = FontFamily(
 val Inter = SpotifyMix
 
 /**
- * Display/artist-name face: uses Spotify Mix Bold for a consistent look.
+ * Display/artist-name face: uses Spotify Mix Bold throughout the app.
  */
-val InstrumentSerif = FontFamily(Font(R.font.spotifymix_bold, weight = FontWeight.Bold))
+val InstrumentSerif = FontFamily(
+    Font(R.font.spotifymix_bold, weight = FontWeight.Normal),
+    Font(R.font.spotifymix_bold, weight = FontWeight.Medium),
+    Font(R.font.spotifymix_bold, weight = FontWeight.SemiBold),
+    Font(R.font.spotifymix_bold, weight = FontWeight.Bold),
+)
 
 /**
  * [content] with the system font scale held at [max] at most.

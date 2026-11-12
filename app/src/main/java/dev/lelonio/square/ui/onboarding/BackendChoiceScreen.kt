@@ -81,20 +81,10 @@ fun BackendChoiceScreen(onChoose: (BackendId) -> Unit) {
                     ProseText(stringResource(R.string.backend_choice_subtitle))
                 }
 
-                // A card each rather than a radio row: there is no "confirm".
-                // Tapping one is the answer, so each says what picking it means,
-                // and what it asks for, before it is picked.
                 Column(
                     Modifier.padding(top = 32.dp, bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    SourceCard(
-                        logo = PhosphorIcons.Fill.SpotifyLogo,
-                        title = stringResource(R.string.backend_spotify),
-                        description = stringResource(R.string.backend_choice_spotify_note),
-                        needs = stringResource(R.string.backend_choice_spotify_needs),
-                        onClick = { onChoose(BackendId.SPOTIFY) },
-                    )
                     SourceCard(
                         logo = PhosphorIcons.Fill.YoutubeLogo,
                         title = stringResource(R.string.backend_youtube),

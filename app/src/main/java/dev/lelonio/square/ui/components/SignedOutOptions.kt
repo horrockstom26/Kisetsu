@@ -17,21 +17,14 @@ import dev.lelonio.square.ui.glass.pressable
 import dev.lelonio.square.ui.theme.InkDim
 
 /**
- * The ways out of a page that only asks to sign in to Spotify.
- *
- * Signed out, that page has no header and so no way into the settings, which
- * is where the source is chosen and the guide is shown again. Someone who
- * picked Spotify by mistake, or skipped the guide meaning to come back to it,
- * was left with one button leading to a service they may not have. These are
- * the other two answers, quieter than the sign-in so it stays the obvious one.
+ * Secondary actions on the signed-out page.
  */
 @Composable
-fun SignedOutOptions(onUseYouTube: () -> Unit, onOpenSettings: () -> Unit) {
+fun SignedOutOptions(onOpenSettings: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.padding(top = 2.dp),
     ) {
-        QuietLink(stringResource(R.string.use_youtube_music), onUseYouTube)
         QuietLink(stringResource(R.string.settings), onOpenSettings)
     }
 }

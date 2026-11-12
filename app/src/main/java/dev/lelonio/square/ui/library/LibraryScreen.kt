@@ -171,11 +171,14 @@ fun LibraryScreen(
 ) {
     when (state) {
         // The same page the home tab shows signed out, mark and all: the two
-        // are one state reached from two tabs, and a plain title here made
-        // them read as two different apps.
         MainViewModel.UiState.LoggedOut -> Centered {
             dev.lelonio.square.ui.components.AppGlyph(64.dp)
-            dev.lelonio.square.ui.components.SquareWordmark(height = 28.dp)
+            Text(
+                text = "Kisetsu",
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                color = Ink,
+                textAlign = TextAlign.Center,
+            )
             Text(
                 stringResource(R.string.unofficial_client),
                 style = MaterialTheme.typography.bodyMedium,
@@ -183,8 +186,8 @@ fun LibraryScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 40.dp),
             )
-            GlassAction(stringResource(R.string.log_in_with_spotify), backdrop, onLogIn)
-            dev.lelonio.square.ui.components.SignedOutOptions(onUseYouTube, onOpenSettings)
+            GlassAction(stringResource(R.string.use_youtube_music), backdrop, onUseYouTube)
+            dev.lelonio.square.ui.components.SignedOutOptions(onOpenSettings = onOpenSettings)
         }
 
         MainViewModel.UiState.Connecting,
