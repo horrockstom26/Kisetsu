@@ -77,6 +77,7 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.CompositingStrategy
@@ -1888,7 +1889,33 @@ fun PlayerScreen(
                             verticalArrangement = Arrangement.Bottom,
                         ) {
                             stageBlock()
-                            controlsBlock()
+                            Box(Modifier.fillMaxWidth()) {
+                                // Progressive blur/fade behind title and controls for readability:
+                                // starts just above the song title area and smoothly increases downward.
+                                Box(
+                                    Modifier
+                                        .matchParentSize()
+                                        .drawBehind {
+                                            // Soft blur-like haze layers (progressive, stronger toward bottom)
+                                            drawRect(
+                                                brush = Brush.verticalGradient(
+                                                    0.00f to Color.Transparent,
+                                                    0.08f to Color.Black.copy(alpha = 0.00f),
+                                                    0.22f to Color.Black.copy(alpha = 0.10f),
+                                                    0.45f to Color.Black.copy(alpha = 0.22f),
+                                                    0.70f to Color.Black.copy(alpha = 0.34f),
+                                                    1.00f to Color.Black.copy(alpha = 0.46f),
+                                                ),
+                                            )
+                                        },
+                                )
+                                Column(
+                                    Modifier.fillMaxWidth(),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                ) {
+                                    controlsBlock()
+                                }
+                            }
                         }
                     }
                 }
