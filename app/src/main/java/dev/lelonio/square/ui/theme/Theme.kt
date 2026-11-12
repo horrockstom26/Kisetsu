@@ -152,7 +152,7 @@ fun SquareTheme(
         }.collectAsState()
         MaterialTheme(
             colorScheme = scheme,
-            typography = if (systemFont) SystemTypography else SpotTypography,
+            typography = SpotTypography,
             content = content,
         )
     }
@@ -288,14 +288,10 @@ private fun spotTypography(family: FontFamily, tracking: Float) = Typography(
     labelLarge = TextStyle(fontFamily = family, fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 1.2.sp),
 )
 
-private val SpotTypography = spotTypography(Inter, tracking = 1f)
+private val SpotTypography = spotTypography(SpotifyMix, tracking = 1f)
 
-/**
- * The same scale in the phone's own face. Tracked half as tight: the negative
- * spacing was set for Inter's shapes, and on a wider system face it crowded
- * the letters of a large title together.
- */
-private val SystemTypography = spotTypography(FontFamily.Default, tracking = 0.5f)
+/** Same as app typography (Spotify Mix used everywhere). */
+private val SystemTypography = SpotTypography
 
 /**
  * The listener's light or dark, over the phone's; see PreferencesStore.themeMode.
