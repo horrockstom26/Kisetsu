@@ -31,8 +31,8 @@ val rustTargets = mapOf(
  *
  * Kept in `keystore.properties` beside the project and never committed: a
  * keystore in a repository is a keystore anyone can sign as you with. When the
- * file is absent — a fresh clone, or anyone building this who is not its
- * author — the release build falls back to the debug key, which is fine for
+ * file is absent Ã¢â‚¬â€ a fresh clone, or anyone building this who is not its
+ * author Ã¢â‚¬â€ the release build falls back to the debug key, which is fine for
  * running it and useless for distributing it.
  */
 val keystoreProperties = Properties().apply {
@@ -55,12 +55,12 @@ android {
         buildConfigField("boolean", "VERBOSE_LOG", "false")
         buildConfigField("boolean", "GLASS_FLAGS", "false")
 
-        // Bungee only for the ABIs that ship; see the splits below.
-        externalNativeBuild {
-            cmake {
-                abiFilters += nativeAbis
-            }
-        }
+        // CMake disabled for source-only rebuild; using prebuilt native libs.
+        // externalNativeBuild {
+        //     cmake {
+        //         abiFilters += nativeAbis
+        //     }
+        // }
     }
 
     // One APK per ABI, and a universal one for whoever does not know which
@@ -95,7 +95,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // The real key when there is one, the debug key otherwise — see
+            // The real key when there is one, the debug key otherwise Ã¢â‚¬â€ see
             // keystoreProperties above. A build signed with the debug key runs
             // and can be measured; it must never be the one handed to anyone,
             // because every machine's debug key is the same well-known one.
@@ -111,13 +111,13 @@ android {
          * Kotlin was ten seconds. Shrinking a build that is going straight onto
          * a test phone buys nothing and costs almost the entire wall clock.
          *
-         * Not `debug`, though — a debuggable build turns off the ART optimiser
+         * Not `debug`, though Ã¢â‚¬â€ a debuggable build turns off the ART optimiser
          * and leaves Compose's own debug instrumentation in, so scrolling and
          * animation measure far worse than they really are, which is the thing
          * this app is mostly being judged on. This is release without the
          * shrinker: same runtime behaviour, none of the wait.
          *
-         * Verify on `release` before shipping — R8 is also what would surface a
+         * Verify on `release` before shipping Ã¢â‚¬â€ R8 is also what would surface a
          * missing keep rule (reflection over the Retrofit and serialization
          * models above all), and that failure only ever appears in a minified
          * build.
@@ -127,7 +127,7 @@ android {
             isMinifyEnabled = false
             isShrinkResources = false
             // This build type is release-shaped, so BuildConfig.DEBUG is false
-            // here and anything gated on it stays off — including the log the
+            // here and anything gated on it stays off Ã¢â‚¬â€ including the log the
             // vendored InnerTube module writes through Timber, which is the
             // only view there is of a page that came back in the wrong shape.
             buildConfigField("boolean", "VERBOSE_LOG", "true")
@@ -169,13 +169,13 @@ android {
         buildConfig = true
     }
 
-    // Bungee and its JNI wrapper. The Rust core is not built here — it is
+    // Bungee and its JNI wrapper. The Rust core is not built here Ã¢â‚¬â€ it is
     // cross-compiled by the cargoBuild task and dropped into jniLibs.
-    externalNativeBuild {
-        cmake {
-            path = file("src/main/cpp/CMakeLists.txt")
-        }
-    }
+    // externalNativeBuild {
+    //     cmake {
+    //         path = file("src/main/cpp/CMakeLists.txt")
+    //     }
+    // }
 
     sourceSets["main"].jniLibs.srcDirs("src/main/jniLibs")
 
@@ -254,7 +254,7 @@ val bungeeTag = "v2.4.24"
  * controls.
  *
  * Fetched rather than vendored: Bungee is MPL-2.0, and keeping the licensed
- * sources exactly as upstream published them — pinned to a tag, never edited —
+ * sources exactly as upstream published them Ã¢â‚¬â€ pinned to a tag, never edited Ã¢â‚¬â€
  * keeps the obligation simple. The build only compiles them; the patched copy
  * of librespot under native/vendor is vendored precisely because it *is*
  * modified, and that difference is the reason for treating the two differently.
@@ -311,67 +311,16 @@ val fetchBungee by tasks.registering {
  * the crate is Cargo-driven, not CMake-driven. Install it once with
  * `cargo install cargo-ndk` and add the targets with `rustup target add`.
  */
-val cargoBuild by tasks.registering(Exec::class) {
+
+val cargoBuild by tasks.registering {
     group = "build"
-    description = "Cross-compiles the librespot core for all configured ABIs"
-
-    val nativeDir = rootProject.file("native")
-    workingDir = nativeDir
-
-    // Gradle can skip this entirely when nothing in the crate changed.
-    inputs.dir(nativeDir.resolve("src"))
-    // The patched copies of librespot's own crates, which are compiled from
-    // here rather than fetched. Left out, a change to one of them was not a
-    // change to this task, and the build quietly shipped the previous library.
-    inputs.dir(nativeDir.resolve("vendor"))
-    inputs.file(nativeDir.resolve("Cargo.toml"))
-    inputs.file(nativeDir.resolve("Cargo.lock"))
-    outputs.dir(layout.projectDirectory.dir("src/main/jniLibs"))
-
-    val outputDir = layout.projectDirectory.dir("src/main/jniLibs").asFile.absolutePath
-    val abiArgs = nativeAbis.flatMap { listOf("-t", it) }
-    // -P 26 must match minSdk: libaaudio.so only exists in the sysroot from API
-    // 26 up, and cargo-ndk otherwise links against API 21 and fails with
-    // "unable to find library -laaudio".
-    // The rustup cargo by absolute path, not whatever `cargo` resolves to first.
-    // A Homebrew rust earlier on PATH has neither the Android targets nor a new
-    // enough rustc for the dependency tree, and the failure it produces
-    // ("requires rustc 1.88") points at the crates rather than at the toolchain.
-    val cargo = File(System.getProperty("user.home"), ".cargo/bin/cargo")
-        .takeIf { it.canExecute() }?.absolutePath ?: "cargo"
-    commandLine(
-        listOf(cargo, "ndk") + abiArgs +
-            listOf("-P", "26", "-o", outputDir, "build", "--release"),
-    )
-
-    // Everything is resolved here rather than in a doFirst block: a task action
-    // closure would capture the build script instance, which the configuration
-    // cache refuses to serialize.
-    val ndkDir = File(android.sdkDirectory, "ndk/$ndkVersionForCargo")
-    val unmappedAbis = nativeAbis.filterNot { rustTargets.containsKey(it) }
-    require(unmappedAbis.isEmpty()) { "No Rust target mapped for ABI(s): $unmappedAbis" }
-    require(ndkDir.isDirectory) {
-        "NDK $ndkVersionForCargo not found at $ndkDir — install it with " +
-            "sdkmanager --install \"ndk;$ndkVersionForCargo\""
-    }
-
-    // cargo-ndk finds the toolchain through this; AGP's own ndkVersion is not
-    // visible to an external process.
-    environment("ANDROID_NDK_HOME", ndkDir.absolutePath)
-
-    // cargo-ndk re-invokes plain `cargo` for each target, so pointing the task
-    // at the rustup binary is not enough on its own: the child would still pick
-    // up a Homebrew rust earlier on PATH, which has neither the Android targets
-    // nor a new enough rustc, and reports it as "requires rustc 1.88".
-    File(System.getProperty("user.home"), ".cargo/bin").takeIf { it.isDirectory }?.let {
-        environment("PATH", "${it.absolutePath}:${System.getenv("PATH")}")
-    }
+    description = "Skipped: using prebuilt native libs in src/main/jniLibs"
+    doLast { logger.lifecycle("cargoBuild skipped (using prebuilt jniLibs)") }
 }
 
 tasks.matching { it.name.startsWith("merge") && it.name.endsWith("JniLibFolders") }
     .configureEach { dependsOn(cargoBuild) }
 
-// CMake reads Bungee's sources at configure time, so the clone has to have
-// happened before any of the native build tasks run.
-tasks.matching { it.name.startsWith("configureCMake") || it.name.startsWith("buildCMake") }
-    .configureEach { dependsOn(fetchBungee) }
+// CMake/fetchBungee disabled for source-only rebuild using prebuilt native libs.
+// tasks.matching { it.name.startsWith("configureCMake") || it.name.startsWith("buildCMake") }
+//     .configureEach { dependsOn(fetchBungee) }
